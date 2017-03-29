@@ -119,6 +119,7 @@ Big H1(char *string)
         if (h>=p) break;
     }
     h%=p;
+    //return from_binary(32,(char *)s);
     return h;
 }
 
@@ -1121,6 +1122,31 @@ void PFC::hash_and_map(G1& w,char *ID)
     Big x0=H1(ID);
 
     while (!w.g.set(x0,x0)) x0+=1;
+    //将while替换成下面代码
+    //Big A,B;
+    //Big x,y,v;
+    //A = getA();
+    //B = getB();
+    //Big v1 = modmult(3,A,*mod);
+    //Big v2 = pow(x0,4,*mod);
+    //Big v3 = inverse(modmult(6,x0,*mod),*mod);
+    //v = modmult((v1 - v2),v3,*mod);
+    //Big x1 = pow(v,2,*mod);
+    //Big x2 = pow(x0,6,*mod);
+    //Big x3 = inverse(27,*mod);
+    //Big x4 = (2 * (*mod) - 1) / 3;
+    //Big x5 = pow(x0,2,*mod);
+    //Big x6 = inverse(3,*mod);
+    //x = modmult(pow((x1 - B - modmult(x2,x3,*mod)),x4,*mod) + modmult(x5,x6,*mod),1,*mod);
+    //y = modmult(modmult(x0,x,*mod) + v,1,*mod);
+    //cout << x << "------12" << endl;
+    //cout << y << "------12" << endl;
+    //cout << modmult(pow(y,2,*mod),1,*mod) << endl;
+    //cout << modmult(modmult(pow(x,3,*mod),1,*mod) + modmult(A * x,1,*mod) + B,1,*mod) << endl;
+    //if(modmult(pow(y,2,*mod),1,*mod) == modmult(modmult(pow(x,3,*mod),1,*mod) + modmult(A * x,1,*mod) + B,1,*mod))
+//	cout << "true" << endl;
+//w.g.set(x,x);
+    //marker = MR_EPOINT_NORMALIZED;
 }
 
 void PFC::random(G1& w)

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stack>
 #include "big.h"
+#include "ecn2.h"
 
 //#define MR_PAIRING_SS2    // AES-80 or AES-128 security GF(2^m) curve
 //#define AES_SECURITY 80   // OR
@@ -99,7 +100,8 @@ void cerVer(int num = 70){
 	pfc.precomp_for_mult(e);
 	start = clock();
 	for(int i = 0;i < num;i++)		//计算每一个hi
-		pfc.hash_and_map(a,(char *)"12223asdfq32r489hajkfhaks");
+		pfc.hash_and_map(a,(char *)"121asdf3q4523gdfsasdfsdfd:asfdj;l82u7riojhshajkaksj983289jkajkhsfkjhfiuqawef98235h;;;.,zxc/,v;lakfa09809-2384;lkjasadfjkh389724yjklhasfhafaas45af3asdfq32r489hajkfhaks");
+	pfc.random(a);
 	b = a;
 	for(int i = 1;i < num;i++)		//所有hi相加
 		b = b + a;
@@ -111,7 +113,7 @@ void cerVer(int num = 70){
 	}
 	P = pfc.pairing(e,aa1);		//计算第一个pairing
 	end = clock();
-	cout << "Certificate Verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
+	cout << num <<"  Certificate Verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
 }
 
 void medSigVer(int num = 70){
@@ -148,11 +150,18 @@ void medSigVer(int num = 70){
 	for(int i = 1;i < num;i++)		//计算第三个pairing中的G1
 		n = n + n;
 	P = pfc.pairing(g2,s);			//计算第一个pairing
-	Q = pfc.pairing(g21,m);			//计算第二个pairing
-	R = pfc.pairing(g22,n);			//计算第三个pairing
-	X = Q * R;				//后两个pairing相乘
+	//Q = pfc.pairing(g21,m);			//计算第二个pairing
+	//R = pfc.pairing(g22,n);			//计算第三个pairing
+	//X = Q * R;				//后两个pairing相乘
+	G1 *arr1[2];
+	G2 *arr2[2];
+	arr1[0] = &m;
+	arr1[1] = &n;
+	arr2[0] = &g21;
+	arr2[1] = &g22;
+	X = pfc.multi_pairing(2,arr2,arr1);
 	end = clock();
-	cout << "Message signature verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
+	cout << num << "  Message signature verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
 }
 
 void batVer(int num = 70){
@@ -198,8 +207,8 @@ void batVer(int num = 70){
 	}
 	aa1 = pfc.mult(aa1,ri);			//计算第一个pairing中的G1
 	P = pfc.pairing(g2,s + aa);		//计算第一个pairing
-	Q = pfc.pairing(g21,m);			//计算第三个pairing
-	R = pfc.pairing(g22,n);			//计算第四个pairing
+	//Q = pfc.pairing(g21,m);			//计算第三个pairing
+	//R = pfc.pairing(g22,n);			//计算第四个pairing
 	for(int i = 0;i < num;i++)		//计算第二个pairing中的hi
 		pfc.hash_and_map(hi,(char *)"123234123414");
 	hI = hi;
@@ -207,16 +216,34 @@ void batVer(int num = 70){
 		hI = hI + hi;
 	hI = pfc.mult(hI,ri);			//计算第二个pairing中的G1
 	pkca = pfc.mult(g2,xi);			//计算第二个pairing中的paca
-	S = pfc.pairing(pkca,hI);		//计算第二个pairing
-	X = Q * R * S;				//后三个pairing相乘
+	//S = pfc.pairing(pkca,hI);		//计算第二个pairing
+	//X = Q * R * S;				//后三个pairing相乘
+	G1 *arr1[3];
+	G2 *arr2[3];
+	arr1[0] = &hI;
+	arr1[1] = &m;
+	arr1[2] = &n;
+	arr2[0] = &pkca;
+	arr2[1] = &g21;
+	arr2[2] = &g22;
+	X = pfc.multi_pairing(3,arr2,arr1);
 	end = clock();
-	cout << "batch verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
+	cout << num << "  batch verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
 }
 
-int main(){
-	set();
-	cerVer(100);
-	medSigVer(100);
-	batVer(100);
+int main(int argc,char* argv[]){
+	int array[argc - 1];
+	for(int i = 1;i < argc;i++){
+		array[i - 1] = atoi(argv[i]);
+	}
+	//int array[] = {50,100,200};
+	//int length = sizeof(array) / sizeof(array[0]);
+	int num;
+	for(int i = 0;i < argc - 1;i++){
+		set();
+		cerVer(array[i]);
+		medSigVer(array[i]);
+		batVer(array[i]);
+	}
 	return 0;
 }
