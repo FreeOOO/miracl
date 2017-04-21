@@ -4,6 +4,10 @@
 #include <stack>
 #include "big.h"
 #include "ecn2.h"
+#include "stdlib.h"
+
+#define MIN 500
+#define MAX 1000
 
 //#define MR_PAIRING_SS2    // AES-80 or AES-128 security GF(2^m) curve
 //#define AES_SECURITY 80   // OR
@@ -100,7 +104,7 @@ void cerVer(int num = 70){
 	pfc.precomp_for_mult(e);
 	start = clock();
 	for(int i = 0;i < num;i++)		//计算每一个hi
-		pfc.hash_and_map(a,(char *)"121asdf3q4523gdfsasdfsdfd:asfdj;l82u7riojhshajkaksj983289jkajkhsfkjhfiuqawef98235h;;;.,zxc/,v;lakfa09809-2384;lkjasadfjkh389724yjklhasfhafaas45af3asdfq32r489hajkfhaks");
+		pfc.hash_and_map(a,(char *)"121asdfadfjkh389724yjklhasfhafaas45af3asdfq32r489hajkfhaks");
 	pfc.random(a);
 	b = a;
 	for(int i = 1;i < num;i++)		//所有hi相加
@@ -164,12 +168,30 @@ void medSigVer(int num = 70){
 	cout << num << "  Message signature verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
 }
 
+char *rand_str(char *str,int min,int max)
+{
+	//srand((unsigned)time(NULL));
+	//cout << clock() << endl;
+	//cout << time(NULL) << endl;
+	int i,len = rand() % (min - max + 1) + min;
+        for(i=0;i<len;++i)
+		str[i]='A'+rand()%26;
+	str[i]='\0';
+        return str;
+}
+
 void batVer(int num = 70){
 	clock_t start,end;
+	char *str[num];
+	char temp[num][MAX + 1];
+	for(int i = 0;i < num;i++){
+		//srand((unsigned)time(NULL));
+		str[i] = rand_str(temp[i],MIN,MAX);
+	}
 	//G1 hi;
 	//G2 g2,pkca;
    	//Big x,ri;	   
-	G1 a,b,c,s,a1,b1,g1,m,n,hi,hI,aa,aa1;
+	G1 a,b,c,s,a1,b1,g1,m,n,hi,hI,aa,aa1,M,N;
 	G2 g2,e,f,g21,g22,pkca;
 	GT P,Q,R,S,X;
 	Big x,w,ri,xi;
@@ -191,38 +213,44 @@ void batVer(int num = 70){
 	b1 = pfc.mult(b,x);
 	b1 = pfc.mult(b1,w);
 	c = a1 + b1;
+	pkca = pfc.mult(g2,xi);			//计算第二个pairing中的paca
+	pfc.precomp_for_pairing(pkca);
+	pfc.precomp_for_pairing(g21);
+	pfc.precomp_for_pairing(g22);
+	pfc.precomp_for_pairing(g2);
+	m = pfc.mult(g1,x);			//计算vpki
+	n = pfc.mult(g1,x);			//计算vpki
 	start = clock();
 	s = c;					//计算消息签名si
-	for(int i = 1;i < num;i++)		//计算si相加
-		s = s + c;
-	m = pfc.mult(g1,x);			//计算vpki
-	for(int i = 1;i < num;i++)		//计算第三个pairing中的G1
-		m = m + m;
-	n = pfc.mult(g1,x);			//计算vpki
-	n = pfc.mult(n,w);			//vpki的w次方
+	M = m;
 	aa1 = aa;
-	for(int i = 1;i < num;i++){	
-		n = n + n;			//计算第四个pairing中的G1
+	for(int i = 1;i < num;i++){
+		s = s + c;			//计算si相加
+		M = M + m;			//计算第三个pairing中的G1
 		aa1 = aa1 + aa;			//计算第一个pairing中的σ
+	}
+	for(int i = 0;i < num;i++){
+		n = pfc.mult(n,w);			//vpki的w次方
+		pfc.hash_and_map(hi,str[i]);		//计算第二个pairing中的hi
+	}
+	N = n;
+	hI = hi;
+	for(int i = 1;i < num;i++){	
+		N = N + n;			//计算第四个pairing中的G1
+		hI = hI + hi;			//计算hi相加
 	}
 	//aa1 = pfc.mult(aa1,ri);			//计算第一个pairing中的G1
 	P = pfc.pairing(g2,s + aa1);		//计算第一个pairing
-	//Q = pfc.pairing(g21,m);			//计算第三个pairing
-	//R = pfc.pairing(g22,n);			//计算第四个pairing
-	for(int i = 0;i < num;i++)		//计算第二个pairing中的hi
-		pfc.hash_and_map(hi,(char *)"123234123414");
-	hI = hi;
-	for(int i = 1;i < num;i++)		//计算hi相加
-		hI = hI + hi;
+	//Q = pfc.pairing(g21,M);			//计算第三个pairing
+	//R = pfc.pairing(g22,N);			//计算第四个pairing
 	//hI = pfc.mult(hI,ri);			//计算第二个pairing中的G1
-	pkca = pfc.mult(g2,xi);			//计算第二个pairing中的paca
 	//S = pfc.pairing(pkca,hI);		//计算第二个pairing
 	//X = Q * R * S;				//后三个pairing相乘
 	G1 *arr1[3];
 	G2 *arr2[3];
 	arr1[0] = &hI;
-	arr1[1] = &m;
-	arr1[2] = &n;
+	arr1[1] = &M;
+	arr1[2] = &N;
 	arr2[0] = &pkca;
 	arr2[1] = &g21;
 	arr2[2] = &g22;
@@ -232,18 +260,23 @@ void batVer(int num = 70){
 }
 
 int main(int argc,char* argv[]){
-	int array[argc - 1];
-	for(int i = 1;i < argc;i++){
-		array[i - 1] = atoi(argv[i]);
-	}
+	srand((unsigned)time(NULL));
 	//int array[] = {50,100,200};
 	//int length = sizeof(array) / sizeof(array[0]);
-	int num;
-	for(int i = 0;i < argc - 1;i++){
+	//int array[argc - 1];
+	//for(int i = 1;i < argc;i++){
+	//	array[i - 1] = atoi(argv[i]);
+	//}
+	//int num;
+	//for(int i = 0;i < argc - 1;i++){
+	//	set();
+	//	cerVer(array[i]);
+	//	medSigVer(array[i]);
+	//	batVer(array[i]);
+	//}
+	for(int i = atoi(argv[1]);i <= atoi(argv[2]);i++){
 		set();
-		cerVer(array[i]);
-		medSigVer(array[i]);
-		batVer(array[i]);
+		batVer(i);
 	}
 	return 0;
 }

@@ -1,0 +1,60 @@
+set time:1.071
+1  batch verification time:14.965
+set time:0.91
+2  batch verification time:15.714
+set time:1.105
+3  batch verification time:16.017
+set time:0.903
+4  batch verification time:16.823
+set time:0.912
+5  batch verification time:17.62
+set time:0.913
+6  batch verification time:18.428
+set time:0.903
+7  batch verification time:19.09
+set time:0.908
+8  batch verification time:19.711
+set time:0.919
+9  batch verification time:20.96
+set time:0.91
+10  batch verification time:21.489
+set time:0.92
+11  batch verification time:22.47
+set time:1.061
+12  batch verification time:22.131
+set time:1.007
+13  batch verification time:23.76
+set time:0.914
+14  batch verification time:23.649
+set time:0.916
+15  batch verification time:24.907
+set time:0.918
+16  batch verification time:25.412
+set time:0.913
+17  batch verification time:26.335
+set time:0.913
+18  batch verification time:27.188
+set time:0.929
+19  batch verification time:27.691
+set time:0.932
+20  batch verification time:27.691
+set time:0.909
+21  batch verification time:28.822
+set time:0.915
+22  batch verification time:30.351
+set time:0.91
+23  batch verification time:30.125
+set time:0.917
+24  batch verification time:31.755
+set time:0.936
+25  batch verification time:33.675
+set time:0.926
+26  batch verification time:33.287
+set time:0.957
+27  batch verification time:33.532
+set time:0.951
+28  batch verification time:34.32
+set time:0.932
+29  batch verification time:34.234
+set time:0.914
+30  batch verification time:37.783
