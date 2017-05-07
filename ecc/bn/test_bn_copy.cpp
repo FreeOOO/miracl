@@ -5,6 +5,7 @@
 #include "big.h"
 #include "ecn2.h"
 #include "stdlib.h"
+#include <unistd.h>
 
 #define MIN 500
 #define MAX 1000
@@ -182,82 +183,41 @@ char *rand_str(char *str,int min,int max)
 
 double batVer(int num = 70){
 	clock_t start,end;
-	char *str[num];
-	char temp[num][MAX + 1];
-	for(int i = 0;i < num;i++){
-		//srand((unsigned)time(NULL));
-		str[i] = rand_str(temp[i],MIN,MAX);
-	}
-	//G1 hi;
-	//G2 g2,pkca;
-   	//Big x,ri;	   
-	G1 a,b,c,s,a1,b1,g1,m,n,hi,hI,aa,aa1,M,N;
-	G2 g2,e,f,g21,g22,pkca;
-	GT P,Q,R,S,X;
-	Big x,w,ri,xi;
-	pfc.random(a);
-	pfc.random(b);
-	pfc.random(aa);
-	pfc.random(x);
-	pfc.random(w);
-	pfc.random(ri);
-	pfc.random(g1);
-	pfc.random(e);
-	pfc.random(f);
-	pfc.random(g2);
-	pfc.random(g21);
-	pfc.random(g22);
-	pfc.precomp_for_mult(a);
-	pfc.precomp_for_mult(b);
-	a1 = pfc.mult(a,x);
-	b1 = pfc.mult(b,x);
-	b1 = pfc.mult(b1,w);
-	c = a1 + b1;
-	pkca = pfc.mult(g2,xi);			//计算第二个pairing中的paca
-	pfc.precomp_for_pairing(pkca);
-	pfc.precomp_for_pairing(g21);
-	pfc.precomp_for_pairing(g22);
-	pfc.precomp_for_pairing(g2);
-	m = pfc.mult(g1,x);			//计算vpki
-	n = pfc.mult(g1,x);			//计算vpki
+	G1 si1,si2,s1,s2,pi0,pi1,Pi0,Pi1,Pi;
+	G2 Pcs,p2,u2;
+	Big ci;
+	pfc.random(si1);
+	pfc.random(si2);
+	pfc.random(p2);
+	pfc.random(u2);
+	pfc.precomp_for_pairing(p2);
+	pfc.precomp_for_pairing(u2);
+	s1 = si1;
+	s2 = si2;
 	start = clock();
-	s = c;					//计算消息签名si
-	M = m;
-	aa1 = aa;
 	for(int i = 1;i < num;i++){
-		s = s + c;			//计算si相加
-		M = M + m;			//计算第三个pairing中的G1
-		aa1 = aa1 + aa;			//计算第一个pairing中的σ
+		s1 = s1 + si1;
+		s2 = s2 + si2;
 	}
+	pfc.hash_and_map(Pcs,(char *)"asdfasdfasdfdfasdfa");
 	for(int i = 0;i < num;i++){
-		n = pfc.mult(n,w);			//vpki的w次方
-		pfc.hash_and_map(hi,str[i]);		//计算第二个pairing中的hi
+		pfc.hash_and_map(pi0,(char *)"ioa8ysdf872qy34rj");
+		pfc.hash_and_map(pi1,(char *)"ioasfsdaf8ysdf872qy34rj");
+		ci = pfc.hash_to_group((char *)"asdfq9823475ulhkajsdf");
 	}
-	N = n;
-	hI = hi;
-	for(int i = 1;i < num;i++){	
-		N = N + n;			//计算第四个pairing中的G1
-		hI = hI + hi;			//计算hi相加
+	pfc.pairing(p2,s1);
+	Pi0 = pi0;
+	Pi1 = pi1;
+	for(int i = 1;i < num;i++){
+		Pi0 = Pi0 + pi0;
+		Pi1 = pfc.mult(pi1,ci);
 	}
-	//aa1 = pfc.mult(aa1,ri);			//计算第一个pairing中的G1
-	P = pfc.pairing(g2,s + aa1);		//计算第一个pairing
-	//Q = pfc.pairing(g21,M);			//计算第三个pairing
-	//R = pfc.pairing(g22,N);			//计算第四个pairing
-	//hI = pfc.mult(hI,ri);			//计算第二个pairing中的G1
-	//S = pfc.pairing(pkca,hI);		//计算第二个pairing
-	//X = Q * R * S;				//后三个pairing相乘
-	G1 *arr1[3];
-	G2 *arr2[3];
-	arr1[0] = &hI;
-	arr1[1] = &M;
-	arr1[2] = &N;
-	arr2[0] = &pkca;
-	arr2[1] = &g21;
-	arr2[2] = &g22;
-	X = pfc.multi_pairing(3,arr2,arr1);
+	Pi = Pi0 + Pi1;
+	G1 *arr1[2] = {&s2,&Pi};
+	G2 *arr2[2] = {&Pcs,&u2};
+	pfc.multi_pairing(2,arr2,arr1);
 	end = clock();
-	//cout << num << "  batch verification time:" << (double)(end-start)*1000/CLOCKS_PER_SEC << endl;
-return (double)(end-start)*1000/CLOCKS_PER_SEC;
+	return (double)(end-start)*1000/CLOCKS_PER_SEC;
 }
 
 int main(int argc,char* argv[]){
@@ -280,6 +240,7 @@ int main(int argc,char* argv[]){
 		set();
 		double time = 0;
 		for(int j = 0;j < atoi(argv[3]);j++){
+			usleep(1000 * 80);
 			time += batVer(i);
 		}
 		cout << i << ":" << time / atoi(argv[3]) << endl;
