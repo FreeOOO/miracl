@@ -3,6 +3,8 @@ g++ ecsgen.cpp big.cpp ecn.cpp -o test_ecsgen.out ../miracl.a
 g++ ecsign.cpp big.cpp ecn.cpp -o test_ecsgen.out ../miracl.a
 
 
+
+修改common.ecs更改安全参数
 192
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFF
 -3
